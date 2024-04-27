@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\hospital;
+use App\Models\User;
+use App\Models\jawatan;
+use Brian2694\Toastr\Facades\Toastr;
+use Carbon\Carbon;
+use DB;
+
+class HospitalController extends Controller
+{
+     
+    // view list all 
+    public function list()
+    {
+        $hospital = DB::table('hospitals')      
+        -> orderBy('lokasi', 'asc') 
+        ->get();        //list
+        return view('hospital.hospital_control',compact('hospital'));
+    }
+
+    
+ 
+    //add 
+    public function hospitalAdd()
+    { 
+       
+        $hospital = DB::table('hospitals')
+        -> orderBy('lokasi', 'asc') 
+        ->get();
+        return view('hospital.hospital_add',compact('hospital'));
+    }
+
+
+    //save
+    public function hospitalSave(Request $request)
+    {
+        $request->validate([
+            
+            'lokasi' => 'required|string|max:255',
+            'bilangan' => 'required|string',
+            'isi' => 'required|string',
+            'kosong' => 'required|string',
+            
+        ]);
+
+        $hospital = new hospital;
+        $hospital ->lokasi       = $request->lokasi;
+        $hospital ->bilangan     = $request->bilangan;
+        $hospital ->isi          = $request->isi;
+        $hospital ->kosong       = $request->kosong;
+        $hospital ->save();
+
+        Toastr::success('Data added successfully :)','Success');
+        return redirect()->back();
+       
+ 
+    }
+
+    // edit
+    public function hospitalEdit($id)
+    {
+        $hospital = DB::table('hospitals')->where('id',$id)
+        -> orderBy('lokasi', 'asc') 
+        ->get();
+        return view('hospital.hospital_edit',compact('hospital'));
+      
+    }
+    // update to db
+    public function hospitalUpdate( Request $request)
+    {
+        $id              = $request->id;
+        $lokasi          = $request->lokasi;
+        $bilangan        = $request->bilangan;
+        $isi             = $request->isi;
+        $kosong          = $request->kosong;
+      
+        $update = [
+
+            'id'              => $id,
+            'lokasi'          => $lokasi,
+            'bilangan'        => $bilangan,
+            'isi'             => $isi,
+            'kosong'          => $kosong,
+            
+        ];
+
+        hospital::where('id',$request->id)->update($update);
+        Toastr::success('Data updated successfully :)','Success');
+        return redirect()->route('all/hospital/list');
+        
+    }
+
+    // delete
+    public function hospitalDelete($id)
+    {
+        $delete = hospital::find($id);
+        $delete->delete();
+        Toastr::success('Data deleted successfully :)','Success');
+        return redirect()->route('all/hospital/list');
+    }
+}
